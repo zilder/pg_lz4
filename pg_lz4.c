@@ -2,16 +2,48 @@
 #include "fmgr.h"
 #include "lz4.h"
 #include "access/cmapi.h"
+#include "commands/defrem.h"
+#include "nodes/parsenodes.h"
+#include "utils/builtins.h"
 #include "utils/datum.h"
 
 
 PG_MODULE_MAGIC;
 
+typedef struct
+{
+	int	acceleration;
+} lz4_option;
+
 PG_FUNCTION_INFO_V1( lz4_handler );
+
+static void *
+lz4_initstate(Oid acoid, List *options)
+{
+	ListCell   *lc;
+	lz4_option *opt = (lz4_option *) palloc(sizeof(lz4_option));
+
+	/* default acceleration */
+	opt->acceleration = 1;
+
+	/* iterate through user options */
+	foreach (lc, options)
+	{
+		DefElem    *def = (DefElem *) lfirst(lc);
+
+		if (strcmp(def->defname, "acceleration") == 0)
+			opt->acceleration = pg_atoi(defGetString(def), 4, 0);
+		else
+			elog(ERROR, "Unknown option '%s'", def->defname);
+	}
+
+	return (void *) opt;
+}
 
 static bytea *
 lz4_compress(CompressionAmOptions *cmoptions, const bytea *value)
 {
+	lz4_option *opt = (lz4_option *) cmoptions->acstate;
 	int		src_len = (Size) VARSIZE_ANY_EXHDR(value);
 	int		dst_len;
 	int		len;
@@ -22,7 +54,8 @@ lz4_compress(CompressionAmOptions *cmoptions, const bytea *value)
 
 	len = LZ4_compress_fast((char *) VARDATA_ANY(value),
 							(char *) ret + VARHDRSZ_CUSTOM_COMPRESSED,
-							src_len, dst_len, 1);
+							src_len, dst_len,
+							opt->acceleration);
 
 	if (len >= 0)
 	{
@@ -62,7 +95,7 @@ lz4_handler(PG_FUNCTION_ARGS)
 
 	routine->cmcheck = NULL;
 	routine->cmdrop = NULL;
-	routine->cminitstate = NULL;
+	routine->cminitstate = lz4_initstate;
 	routine->cmcompress = lz4_compress;
 	routine->cmdecompress = lz4_decompress;
 
