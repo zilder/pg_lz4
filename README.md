@@ -20,7 +20,7 @@ make install USE_PGXS=1
 or if your PostgreSQL bin directory isn't in PATH:
 
 ```
-make install USE_PGXS=1 PG_CONFIG=/path/to/your/postgres/bin
+make install USE_PGXS=1 PG_CONFIG=/path/to/your/postgres/bin/pg_config
 ```
 
 ## Usage
