@@ -17,6 +17,27 @@ typedef struct
 
 PG_FUNCTION_INFO_V1( lz4_handler );
 
+static void
+lz4_check(Form_pg_attribute att, List *options)
+{
+	ListCell   *lc;
+
+	foreach (lc, options)
+	{
+		DefElem    *def = (DefElem *) lfirst(lc);
+
+		if (strcmp(def->defname, "acceleration") == 0)
+		{
+			int accel = pg_atoi(defGetString(def), 4, 0);
+
+			if (accel < 1)
+				elog(WARNING, "Acceleration value <= 0 will be replaced by 1 (default)");
+		}
+		else
+			elog(ERROR, "Unknown option '%s'", def->defname);
+	}
+}
+
 static void *
 lz4_initstate(Oid acoid, List *options)
 {
@@ -93,7 +114,7 @@ lz4_handler(PG_FUNCTION_ARGS)
 {
 	CompressionAmRoutine *routine = makeNode(CompressionAmRoutine);
 
-	routine->cmcheck = NULL;
+	routine->cmcheck = lz4_check;
 	routine->cmdrop = NULL;
 	routine->cminitstate = lz4_initstate;
 	routine->cmcompress = lz4_compress;
