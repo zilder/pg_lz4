@@ -115,7 +115,6 @@ lz4_handler(PG_FUNCTION_ARGS)
 	CompressionAmRoutine *routine = makeNode(CompressionAmRoutine);
 
 	routine->cmcheck = lz4_check;
-	routine->cmdrop = NULL;
 	routine->cminitstate = lz4_initstate;
 	routine->cmcompress = lz4_compress;
 	routine->cmdecompress = lz4_decompress;
