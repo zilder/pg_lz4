@@ -14,13 +14,13 @@ Also `liblz4` is required to build and use this extension.
 To install `pg_lz4` extension run:
 
 ```
-make install USE_PGXS=1
+make install
 ```
 
 or if your PostgreSQL bin directory isn't in PATH:
 
 ```
-make install USE_PGXS=1 PG_CONFIG=/path/to/your/postgres/bin/pg_config
+make install PG_CONFIG=/path/to/your/postgres/bin/pg_config
 ```
 
 ## Usage
