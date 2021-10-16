@@ -4,7 +4,7 @@ lz4 compression for PostgreSQL
 
 ## Requirements
 
-This extension only works with developement version of PostgreSQL with custom compression methods patch applied:
+This extension only works with development version of PostgreSQL with custom compression methods patch applied:
 https://www.postgresql.org/message-id/20190315125203.5da43edb%40ildus-work.localdomain
 
 Also `liblz4` is required to build and use this extension.
